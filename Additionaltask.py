@@ -23,15 +23,16 @@ src = req.text
     
 soup  = BeautifulSoup(src, "lxml")
 
-otzivi_tags = soup.find_all("article", class_="comment")
+otzivi_tags = soup.find_all(class_="comment-content comment")
 
 
 with open("otzivi.txt", "w", encoding="utf-8") as file:
-    for item in otzivi_tags:
-        special_el = item.find("p")
-        otzivi = special_el.text
+    for otzivi_tag in otzivi_tags:
+        otzivi = otzivi_tag.get_text(strip=True)
+        
+        # Удаление стоп-слов из текста отзыва
         clean_otzivi = remove_stop_words(otzivi, stop_words)
-        file.write(clean_otzivi + "\n\n")
-            
-# comment-content comment
+        
+        file.write(clean_otzivi + "\n")
+        print(clean_otzivi)
 
