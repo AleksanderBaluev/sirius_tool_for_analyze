@@ -1,0 +1,108 @@
+import os
+import nltk
+from pymorphy2 import MorphAnalyzer
+from nltk.tokenize import RegexpTokenizer
+from nltk.corpus import stopwords
+from gensim.models import word2vec, Word2Vec
+from gensim.models.word2vec import LineSentence
+import tensorflow as tf
+import imdb
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Flatten
+from transformers import BertTokenizer, TFBertModel
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+
+# морфологический и синтаксический анализ
+morph = MorphAnalyzer()
+tokenizer = RegexpTokenizer(r'\w+')
+stop_words = set(stopwords.words('russian'))
+
+# Считываем файл и приводим все слова к нижнему регистру
+with open('all_otzovi.txt', 'r', encoding='utf-8') as file:
+    text = file.read().lower()
+
+# Токенизация текста и удаление пунктуации
+tokens = tokenizer.tokenize(text)
+
+# Лемматизация слов с помощью PyMorphy2
+lemmas = [morph.parse(token)[0].normal_form for token in tokens if token.isalpha()]
+
+# Удаление стоп-слов
+filtered_lemmas = [lemma for lemma in lemmas if lemma not in stop_words]
+
+# Сохраняем обработанные слова в новый файл
+with open('ML_data_learning.txt', 'w', encoding='utf-8') as file:
+    file.write(' '.join(filtered_lemmas))
+
+data_file = 'ML_data_learning.txt'
+
+# Загрузка данных из файла и обучение модели Word2Vec
+sentences = LineSentence(data_file)
+model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4)
+
+# Сохранение обученной модели
+model.save('word2vec_model')
+
+# with open("all_otzovi.txt", encoding="utf-8") as file:
+#     data = file.read()
+
+data = ["Лучший банк", "Банк не плохой", "Хороший банк", "Мошенники", "Обман"]
+labels = [1, 1, 1, 0, 0]
+
+# инициализация bert tokenizer
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+max_length = 128
+
+# функция для кодирования текстов с помощью bert
+def bert_encode(texts, tokenizer, max_length=max_length):
+    input_ids = []
+    attention_masks = []
+
+    for text in texts:
+        encoded = tokenizer.encode_plus(text, max_length=max_length, truncation=True, padding='max_length', add_special_tokens=True, return_attention_mask=True, return_tensors='tf')
+        input_ids.append(encoded['input_ids'])
+        attention_masks.append(encoded['attention_mask'])
+    
+    return np.array(input_ids), np.array(attention_masks)
+
+# загрузка предобученной модели bert
+bert_model = TFBertModel.from_pretrained('bert-base-uncased')
+input_layer = tf.keras.Input(shape=(max_length,), dtype=tf.int32)
+bert_output = bert_model(input_layer)['last_hidden_state']
+lstm_layer = LSTM(128)(bert_output)
+output_layer = Dense(1, activation='sigmoid')(lstm_layer)
+
+model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Предобработка данных для Word2Vec
+reviews = data
+word2vec_model = Word2Vec(reviews, vector_size=100, window=5, min_count=1, workers=4)
+word2vec_model.train(reviews, total_examples=len(reviews), epochs=10)
+
+x = np.array(reviews)
+y = np.array(labels)
+
+x_train, x_test, y_train, y_test = train_test_split(reviews, labels, test_size=0.2, random_state=42)
+
+# Компиляция модели
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Преобразование данных для предсказания
+x_test_input_ids, x_test_attention_masks = bert_encode(x_test, tokenizer, max_length=max_length)
+
+# Обучение модели
+model.fit(x_train, y_train, batch_size=32, epochs=5, validation_data=(x_test_input_ids, y_test))
+
+# Предсказание и сохранение результатов
+predictions = model.predict(x_test_input_ids)
+predicted_sentiments = ['positive' if pred > 0.5 else 'negative' for pred in predictions]
+results = pd.DataFrame({'review': x_test, 'predicted_sentiment': predicted_sentiments})
+results.to_csv('results.txt', index=False)
