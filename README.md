@@ -15,6 +15,9 @@
 - Python 3.10+
 - requirements.txt [streamlit, pandas, transformers]
 
+## Дополнение
+parcer.py использовался в качестве парсера для сбора отзывов в файл all_reviews.txt (данный файл можно использовать в качестве теста веб-приложения).
+
 ### EN 
 
 ## Description
@@ -29,3 +32,6 @@ Simply run the `review_analysis_app.bat` file. It will automatically set up the 
 ## 📦 Requirements
 - Python 3.10+
 - requirements.txt [streamlit, pandas, transformers]
+
+## Addendum
+parcer.py was used as a parser to collect reviews into the all_reviews.txt file (this file can be used as a test for the web application).
