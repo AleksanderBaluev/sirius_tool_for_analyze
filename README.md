@@ -1,14 +1,31 @@
-Для чего создан данный инструмент:
-Данный инструмент сделан для анализа клиентских отзывов компании Тинькофф.
+# review_analysis_app 🚀
 
-Шаги работы инструмента:
-1. Парсинг отзывов с откртых источников.
-2. Морфологический и Синтаксичиский анализ.
-3. Перевод отзывов в векторы.
-4. Распределение отзывов по категориям с помощью ML.
+### RU
 
-файл Additionaltask.ipynb является парсером, который производит сбор отзывов с сайтов Brobank,otzovik.
+## Описание
+Данный проект представляет из себя веб-приложение, способное анализировать данные (отзывы) и с помощью обученной модели искусственного интеллекта определять тональность содержания и выявлять: к какой группе принадлежит отзыв(положительный, негативный, нейтральный). 
 
-файл all_otzovi.txt содержит все отзовы, собранные парсером.
+## 🛠 Установка 
+Скачайте проект в папку, установите версию python 3.10 или выше (или же это сделает инструмент автоматически).
 
-файл Prototype.ipynb используется для морфологического и синтаксического анализа отзывов, перевод отзывов в векторы и распределяет отзывы по категориям.
+## 🪟 Запуск на Windows 
+Просто запустите файл `review_analysis_app.bat`. Он автоматически настроит окружение и запустит приложение.
+
+## 📦 Требования
+- Python 3.10+
+- requirements.txt [streamlit, pandas, transformers]
+
+### EN 
+
+## Description
+This project is a web application capable of analyzing data (reviews) and, using a trained artificial intelligence model, determining the tone of the content and identifying which group the review belongs to (positive, negative, neutral).
+
+## 🛠 Installation
+Download the project to a folder, install Python version 3.10 or higher (or the tool will do this automatically).
+
+## 🪟 Running on Windows
+Simply run the `review_analysis_app.bat` file. It will automatically set up the environment and start the app.
+
+## 📦 Requirements
+- Python 3.10+
+- requirements.txt [streamlit, pandas, transformers]
