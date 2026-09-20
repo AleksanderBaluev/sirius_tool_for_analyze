@@ -26,7 +26,7 @@ soup  = BeautifulSoup(src, "lxml")
 otzivi_tags = soup.find_all(class_="comment-content comment")
 
 
-with open("otzivi.txt", "w", encoding="utf-8") as file:
+with open("all_reviews.txt", "w", encoding="utf-8") as file:
     for otzivi_tag in otzivi_tags:
         otzivi = otzivi_tag.get_text(strip=True)
         
